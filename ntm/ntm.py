@@ -69,7 +69,7 @@ class NTM(nn.Module):
         """
         # Unpack the previous state
         prev_reads, prev_controller_state, prev_heads_states = prev_state
-
+        #print(prev_reads[0].shape)
         # Use the controller to get an embeddings
         inp = torch.cat([x] + prev_reads, dim=1)
         controller_outp, controller_state = self.controller(inp, prev_controller_state)

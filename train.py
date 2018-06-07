@@ -22,10 +22,12 @@ LOGGER = logging.getLogger(__name__)
 
 from tasks.copytask import CopyTaskModelTraining, CopyTaskParams
 from tasks.repeatcopytask import RepeatCopyTaskModelTraining, RepeatCopyTaskParams
+from tasks.iftask import IfTaskModelTraining, IfTaskParams
 
 TASKS = {
     'copy': (CopyTaskModelTraining, CopyTaskParams),
-    'repeat-copy': (RepeatCopyTaskModelTraining, RepeatCopyTaskParams)
+    'repeat-copy': (RepeatCopyTaskModelTraining, RepeatCopyTaskParams),
+    'if': (IfTaskModelTraining, IfTaskParams)
 }
 
 
@@ -73,6 +75,7 @@ def save_checkpoint(net, name, args, batch_num, losses, costs, seq_lengths):
     torch.save(net.state_dict(), model_fname)
 
     # Save the training history
+    '''
     train_fname = basename + ".json"
     LOGGER.info("Saving model training history to '%s'", train_fname)
     content = {
@@ -81,7 +84,7 @@ def save_checkpoint(net, name, args, batch_num, losses, costs, seq_lengths):
         "seq_lengths": seq_lengths
     }
     open(train_fname, 'wt').write(json.dumps(content))
-
+    '''
 
 def clip_grads(net):
     """Gradient clipping to the range [10, 10]."""
@@ -157,7 +160,7 @@ def evaluate(net, criterion, X, Y):
         'y_out_binarized': y_out_binarized,
         'states': states
     }
-
+    print('X: ', X)
     return result
 
 

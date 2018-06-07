@@ -10,12 +10,13 @@ from torch.autograd import Variable
 from torch import optim
 import numpy as np
 
-# from ntm.aio import EncapsulatedNTM
+#from ntm.aio import EncapsulatedNTM
+from ntm.aio import EncapsulatedNTM
 
 
-def test(num_batches, batch_size):
+def dataloader(num_batches, batch_size, seq_width=8):
   for batch_num in range(num_batches):
-    seq_len, seq_width = 3, 8
+    seq_len = 3
 
     seq_tensor    = np.empty((batch_size, 3, seq_width))
     output_tensor = np.empty((batch_size, 1, seq_width))
@@ -44,19 +45,23 @@ def test(num_batches, batch_size):
 
     # print(seq_tensor[0], output_tensor[0])
     # print(seq_tensor[1], output_tensor[1])
+    shapes = input_tensor.shape
+    #print(shapes)
+    input_tensor = torch.transpose(input_tensor, 0, 1)
+    #print(input_tensor.shape)
 
-    # yield batch_num+1, input_tensor.float(), output_tensor.float()
+    yield batch_num+1, input_tensor.float(), output_tensor.float()
 
 
 @attrs
-class CopyTaskParams(object):
-    name = attrib(default="copy-task")
+class IfTaskParams(object):
+    name = attrib(default="if-task")
     controller_size = attrib(default=100, convert=int)
     controller_layers = attrib(default=1,convert=int)
     num_heads = attrib(default=1, convert=int)
     sequence_width = attrib(default=8, convert=int)
-    sequence_min_len = attrib(default=1,convert=int)
-    sequence_max_len = attrib(default=20, convert=int)
+    #sequence_min_len = attrib(default=1,convert=int)
+    #sequence_max_len = attrib(default=20, convert=int)
     memory_n = attrib(default=128, convert=int)
     memory_m = attrib(default=20, convert=int)
     num_batches = attrib(default=50000, convert=int)
@@ -82,8 +87,8 @@ class CopyTaskParams(object):
 #
 
 @attrs
-class CopyTaskModelTraining(object):
-    params = attrib(default=Factory(CopyTaskParams))
+class IfTaskModelTraining(object):
+    params = attrib(default=Factory(IfTaskParams))
     net = attrib()
     dataloader = attrib()
     criterion = attrib()
@@ -102,8 +107,7 @@ class CopyTaskModelTraining(object):
     @dataloader.default
     def default_dataloader(self):
         return dataloader(self.params.num_batches, self.params.batch_size,
-                          self.params.sequence_width,
-                          self.params.sequence_min_len, self.params.sequence_max_len)
+                          self.params.sequence_width)
 
     @criterion.default
     def default_criterion(self):
@@ -115,7 +119,6 @@ class CopyTaskModelTraining(object):
                              momentum=self.params.rmsprop_momentum,
                              alpha=self.params.rmsprop_alpha,
                              lr=self.params.rmsprop_lr)
-
 
 if __name__ == '__main__':
   test(1, 16)
